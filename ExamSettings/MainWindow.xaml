@@ -1,4 +1,4 @@
-﻿<Window x:Class="ExamSettings.MainWindow"
+<Window x:Class="ExamSettings.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -43,7 +43,7 @@
 
             </ui:NavigationView.FooterMenuItems>
 
-            <Frame x:Name="Frame_Main" NavigationUIVisibility="Hidden" />
+            <ui:Frame x:Name="Frame_Main" NavigationUIVisibility="Hidden" />
 
         </ui:NavigationView>
     </Grid>
