@@ -275,7 +275,7 @@ namespace ExamSettings.Pages
 
             var dialog = new ContentDialog
             {
-                Title = "确认删除",
+                Title = "是否要删除",
                 Content = $"确定要删除时间段 '{selectedSlot.Name}' 吗？",
                 PrimaryButtonText = "确定",
                 SecondaryButtonText = "取消"

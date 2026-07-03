@@ -2,9 +2,6 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
-using System.Drawing;
-using System.Collections.Generic;
-using System.Linq;
 
 class Program
 {
@@ -19,7 +16,7 @@ class Program
     [STAThread]
     static void Main()
     {
-        Console.WriteLine("程序已经启动");
+        Console.WriteLine("程序已启动");
         
         AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
         Application.ThreadException += Application_ThreadException;
@@ -114,88 +111,22 @@ class TrayApplicationContext : ApplicationContext
 
     private void OpenExamSettings(object? sender, EventArgs e)
     {
-        string[] candidates = new[]
-        {
-            Path.Combine(_appPath, "ExamSettings.exe"),
-            Path.Combine(_appPath, "ExamSettings", "ExamSettings.exe")
-        };
-
-        foreach (var c in candidates)
-        {
-            try
-            {
-                Console.WriteLine($"[ExamHelper.Services] 尝试打开设置文件: {c}");
-                var full = Path.GetFullPath(c);
-                if (File.Exists(full))
-                {
-                    Console.WriteLine($"[ExamHelper.Services] 找到设置文件: {full}");
-                    StartExe(full);
-                    return;
-                }
-                Console.WriteLine($"[ExamHelper.Services] 设置文件不存在: {full}");
-            }
-            catch { }
-        }
-
-        string[] projectRoots = new[]
-        {
-            Path.GetFullPath(Path.Combine(_appPath, "..", "ExamSettings")),
-            Path.GetFullPath(Path.Combine(_appPath, "..", "..", "ExamSettings")),
-            Path.GetFullPath(Path.Combine(_appPath, "ExamSettings")),
-            Path.GetFullPath(Path.Combine(_appPath, ".."))
-        };
-
-        foreach (var projRoot in projectRoots.Distinct())
-        {
-            try
-            {
-                if (!Directory.Exists(projRoot))
-                    continue;
-
-                foreach (var conf in new[] { "Debug", "Release" })
-                {
-                    var binConf = Path.Combine(projRoot, "bin", conf);
-                    if (!Directory.Exists(binConf))
-                        continue;
-
-                    foreach (var tfmDir in Directory.GetDirectories(binConf))
-                    {
-                        var exe = Path.Combine(tfmDir, "ExamSettings.exe");
-                        if (File.Exists(exe))
-                        {
-                            StartExe(exe);
-                            return;
-                        }
-                    }
-                }
-            }
-            catch { }
-        }
-
-        string? found = FindInDescendants(_appPath, 3) ?? FindInDescendants(Path.GetFullPath(Path.Combine(_appPath, "..")), 4);
-        if (found != null)
-        {
-            StartExe(found);
-            return;
-        }
-
         try
         {
-            _trayIcon.ShowBalloonTip(5000, "未能打开设置", "找不到 ExamSettings 可执行文件。请确认应用程序是否完整。", ToolTipIcon.Warning);
-        }
-        catch { }
-    }
-
-    private void StartExe(string fullPath)
-    {
-        try
-        {
-            Console.WriteLine($"[ExamHelper.Services] 启动设置程序: {fullPath}");
-            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            Console.WriteLine("[ExamHelper.Services] 启动设置程序");
+            var thread = new System.Threading.Thread(() =>
             {
-                FileName = fullPath,
-                UseShellExecute = true
+                try
+                {
+                    ExamSettings.App.Main();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[ExamHelper.Services] 启动设置程序失败: {ex.Message}");
+                }
             });
+            thread.SetApartmentState(System.Threading.ApartmentState.STA);
+            thread.Start();
         }
         catch (Exception ex)
         {
@@ -206,44 +137,6 @@ class TrayApplicationContext : ApplicationContext
             }
             catch { }
         }
-    }
-
-    private string? FindInDescendants(string root, int maxDepth)
-    {
-        try
-        {
-            root = Path.GetFullPath(root);
-        }
-        catch { return null; }
-
-        var q = new Queue<(string dir, int depth)>();
-        q.Enqueue((root, 0));
-
-        while (q.Count > 0)
-        {
-            var (dir, depth) = q.Dequeue();
-            try
-            {
-                foreach (var file in Directory.GetFiles(dir, "ExamSettings.exe"))
-                {
-                    return file;
-                }
-            }
-            catch { }
-
-            if (depth >= maxDepth) continue;
-
-            try
-            {
-                foreach (var d in Directory.GetDirectories(dir))
-                {
-                    q.Enqueue((d, depth + 1));
-                }
-            }
-            catch { }
-        }
-
-        return null;
     }
 
     private void Restart(object? sender, EventArgs e)

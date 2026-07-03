@@ -1,30 +1,28 @@
-using System.Configuration;
-using System.Data;
-using System.Windows;
 using System;
+using System.Windows;
 
 namespace ExamSettings
 {
-    /// <summary>
-    /// Interaction logic for App.xaml
-    /// </summary>
     public partial class App : Application
     {
-        protected override void OnStartup(StartupEventArgs e)
+        [STAThread]
+        public static void Main()
         {
-            base.OnStartup(e);
-            Console.WriteLine("程序已经启动");
-        }
-
-        protected override void OnExit(ExitEventArgs e)
-        {
-            base.OnExit(e);
+            var app = new App();
+            app.InitializeComponent();
+            app.Run();
         }
 
         public App()
         {
-            this.DispatcherUnhandledException += App_DispatcherUnhandledException;
+            DispatcherUnhandledException += App_DispatcherUnhandledException;
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+        }
+
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            base.OnStartup(e);
+            Console.WriteLine("程序已经启动");
         }
 
         private void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
@@ -41,5 +39,4 @@ namespace ExamSettings
             }
         }
     }
-
 }
